@@ -98,9 +98,25 @@ void *server_func(void *ptr)
 	else if (server_thread_buffer[0]=='5')
 		gtk_widget_set_sensitive (boutonProposition, FALSE);
 	else if (server_thread_buffer[0]=='6')
-		gtk_label_set_text ((GtkLabel*)rolePlayer[0], "Rebelle");
+  {
+    int connect;
+    int num_du_rebelle;
+    char phrase[100];
+
+    sscanf ( server_thread_buffer , "%d %d %s" , &connect, &num_du_rebelle, phrase);
+    gtk_label_set_text ((GtkLabel*)rolePlayer[num_du_rebelle], "Rebelle");
+  }
 	else if (server_thread_buffer[0]=='7')
-		gtk_label_set_text ((GtkLabel*)rolePlayer[0], "Espion ");
+  {
+    int connect;
+    int num_du_rebelle;
+    int num_autre_rebelle;
+    char phrase[100];
+
+    sscanf ( server_thread_buffer , "%d %d %d %s" , &connect, &num_du_rebelle, &num_autre_rebelle, phrase);
+    gtk_label_set_text ((GtkLabel*)rolePlayer[num_du_rebelle], "Espion ");
+    gtk_label_set_text ((GtkLabel*)rolePlayer[num_autre_rebelle], "Espion ");
+  }
 	else if (server_thread_buffer[0]=='C')
 	{
 		char connect;
@@ -240,6 +256,12 @@ if (argc!=6)
   sprintf(port_server_text,"Port serveur: %s",argv[2]);
   labelPortServer = gtk_label_new(port_server_text);
   gtk_fixed_put(GTK_FIXED(fixed), labelPortServer, 200, 0);
+  gtk_widget_set_size_request(labelPortServer,200,20);
+
+
+  sprintf(port_server_text,"Nom joueur: %s",argv[5]);
+  labelPortServer = gtk_label_new(port_server_text);
+  gtk_fixed_put(GTK_FIXED(fixed), labelPortServer, 400, 0);
   gtk_widget_set_size_request(labelPortServer,200,20);
 
   for (i=0;i<5;i++)

@@ -129,8 +129,38 @@ void *server(void *ptr)
         {
             num_espion[1]= rand()%nbj;
         }
-        printf("%d%d\n",num_espion[0],num_espion[1] );
-        //sprintf(mess,"R %s %d",tableauJoueurs[i].nom,i);
+
+        printf("%d%d\n", num_espion[0], num_espion[1] );
+
+        /* on met le role des gentils*/
+        for(i=0;i<nbj;i++)
+            tableauJoueurs[i].role = 0;
+
+        /* on met le role des espions*/
+        tableauJoueurs[num_espion[0]].role = 1;
+        tableauJoueurs[num_espion[1]].role = 1;
+
+        for(i=0;i<nbj;i++)
+        {
+            char mess[100];
+            if(tableauJoueurs[i].role ==0) //gentils
+            {
+                sprintf(mess,"6 %d Je suis un rebelle", i);
+                sendMessage(i,mess);
+            }
+            if(tableauJoueurs[i].role ==1) //espion
+            {
+                int autre_espion;
+                if(num_espion[0]== i)
+                    autre_espion = num_espion[1];
+                else
+                    autre_espion = num_espion[0];
+                sprintf(mess,"7 %d %d Je suis un espion et %s l'est aussi", i, autre_espion, tableauJoueurs[autre_espion].nom);
+                sendMessage(i,mess);
+            }
+
+        }
+
         envoie_roles = 1;
 
     }
