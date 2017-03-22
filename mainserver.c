@@ -9,6 +9,8 @@
 
 #include <pthread.h>
 
+#include <time.h> //Ne pas oublier d'inclure le fichier time.h
+
 # define END 3
 
 int portno;
@@ -95,7 +97,7 @@ void *server(void *ptr)
   	if (n < 0) error("ERROR reading from socket");
   	printf("Here is a message from a client: '%s' '%c'\n",serverbuffer,serverbuffer[0]);
 
-	if ( serverbuffer[0] == 'C' )
+	if ( serverbuffer[0] == 'C' && compteurJoueurs < nbj)
 	{
 		char connect;
 		char mess[100];
@@ -113,14 +115,30 @@ void *server(void *ptr)
             broadcast(mess);
             compteurJoueurs--;
         }
-		//sprintf(mess,"C %s %d",tableauJoueurs[compteurJoueurs].nom,compteurJoueurs);
 		compteurJoueurs++;
-		//broadcast(mess);
 	}
+
+    int envoie_roles = 0;
+    if(compteurJoueurs == nbj && envoie_roles == 0)
+    {
+        int num_espion[2];
+        srand(time(NULL)); // initialisation de rand
+        num_espion[0]= rand()%nbj;
+        num_espion[1]= rand()%nbj;
+        while(num_espion[1]==num_espion[0])
+        {
+            num_espion[1]= rand()%nbj;
+        }
+        printf("%d%d\n",num_espion[0],num_espion[1] );
+        //sprintf(mess,"R %s %d",tableauJoueurs[i].nom,i);
+        envoie_roles = 1;
+
+    }
   	close(newsockfd);
      }
      close(sockfd);
-}
+    }
+
 
 void sendMessage(int j, char *mess)
 {
