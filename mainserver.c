@@ -171,8 +171,17 @@ void *server(void *ptr)
     int meneur_bool = 0;
     if(compteurJoueurs == nbj && meneur_bool==0)
     {
+        char message[100];
         sendMeneur();
         meneur_bool =1;
+        for (i=0;i<compteurJoueurs;i++)
+        {
+            if(i!=meneurCourant-1)
+            {
+                sprintf(message,"3");
+                sendMessage(i,message);
+            }
+        }
 
     }
     

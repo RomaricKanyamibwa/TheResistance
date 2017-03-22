@@ -94,7 +94,17 @@ void *server_func(void *ptr)
 	else if (server_thread_buffer[0]=='2')
 		gtk_widget_set_sensitive (checkboxPlayer[0], TRUE);
 	else if (server_thread_buffer[0]=='3')
-		gtk_widget_set_sensitive (checkboxPlayer[0], FALSE);
+  {    
+    int connect;
+    char phrase[100];
+
+    sscanf ( server_thread_buffer , "%d" , &connect);
+    int i;
+    for(i=0;i<5;i++)
+    {
+      gtk_widget_set_sensitive (checkboxPlayer[i], FALSE);
+    }
+  }
 	else if (server_thread_buffer[0]=='4')
 		gtk_widget_set_sensitive (boutonProposition, TRUE);
 	else if (server_thread_buffer[0]=='5')
@@ -137,7 +147,7 @@ void *server_func(void *ptr)
     int connect;
 
     sscanf ( server_thread_buffer , "%d %d" , &connect, &num_du_meneur);
-    gtk_label_set_text ((GtkLabel*)rolePlayer[num_du_meneur], "Meneur ");
+    gtk_label_set_text ((GtkLabel*)Meneur[num_du_meneur], "Meneur ");
   }
 
         close(newsockfd);
