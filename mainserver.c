@@ -57,6 +57,7 @@ int roles[5];
 
 void sendMessage(int j, char *mess);
 void broadcast(char *message);
+void sendMeneur();//il envoie le meneur
 
 void error(const char *msg)
 {
@@ -118,6 +119,7 @@ void *server(void *ptr)
 		compteurJoueurs++;
 	}
 
+    /*attribution des roles*/
     int envoie_roles = 0;
     if(compteurJoueurs == nbj && envoie_roles == 0)
     {
@@ -164,6 +166,17 @@ void *server(void *ptr)
         envoie_roles = 1;
 
     }
+
+    /*envoie meneur*/
+    int meneur_bool = 0;
+    if(compteurJoueurs == nbj && meneur_bool==0)
+    {
+        sendMeneur();
+        meneur_bool =1;
+
+    }
+    
+
   	close(newsockfd);
      }
      close(sockfd);
@@ -214,6 +227,11 @@ void sendRoles()//il envoie le
 
 void sendMeneur()//il envoie le meneur
 {
+    char message[100];
+    sprintf(message,"8 %d", meneurCourant);
+    broadcast(message);
+    meneurCourant = (meneurCourant+1)%nbj;
+
 }
 
 void sendEquipe()//forme une equipe
@@ -228,6 +246,7 @@ int main(int argc, char *argv[])
 {
      pthread_t thread1, thread2;
      int  iret1, iret2;
+     meneurCourant = 0;
 
 	if (argc!=3)
 	{

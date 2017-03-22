@@ -15,6 +15,7 @@ pthread_t server_thread;
 int server_thread_ret;
 int localServerThreadPortno;
 char server_thread_buffer[1000];
+int num_du_meneur;
 
 char mainServerAddr[100];
 char mainServerPort[100];
@@ -31,6 +32,7 @@ GtkWidget *votePlayer[8];
 GtkWidget *radiovotePlayer[2];
 GtkWidget *radiosucceedPlayer[2];
 GtkWidget *boutonProposition;
+GtkWidget *Meneur[8];
 
 GtkTextBuffer *buffer;
 GtkWidget *text_view;
@@ -130,6 +132,13 @@ void *server_func(void *ptr)
 
 		gtk_label_set_text ((GtkLabel*)labelPlayer[index], nom);
 	}
+  else if (server_thread_buffer[0]=='8')
+  {
+    int connect;
+
+    sscanf ( server_thread_buffer , "%d %d" , &connect, &num_du_meneur);
+    gtk_label_set_text ((GtkLabel*)rolePlayer[num_du_meneur], "Meneur ");
+  }
 
         close(newsockfd);
      }
@@ -282,6 +291,10 @@ if (argc!=6)
         votePlayer[i] = gtk_label_new("--------");
   	gtk_fixed_put(GTK_FIXED(fixed), votePlayer[i], 210, 100+i*20);
   	gtk_widget_set_size_request(votePlayer[i],60,20);
+
+    Meneur[i] = gtk_label_new("");
+    gtk_fixed_put(GTK_FIXED(fixed), Meneur[i], 270, 100+i*20);
+    gtk_widget_set_size_request(Meneur[i],60,20);
   }
 
   boutonProposition = gtk_button_new_with_label("Proposition");//create button
