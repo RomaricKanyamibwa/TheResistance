@@ -88,6 +88,10 @@ void *server(void *ptr)
               error("ERROR on binding");
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
+      /*attribution des roles*/
+     int envoie_roles = 0;
+     /*envoie meneur*/
+    int meneur_bool = 0;
      while (1)
      {
   	newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);//accept est un appel system bloquant
@@ -119,8 +123,7 @@ void *server(void *ptr)
 		compteurJoueurs++;
 	}
 
-    /*attribution des roles*/
-    int envoie_roles = 0;
+
     if(compteurJoueurs == nbj && envoie_roles == 0)
     {
         int num_espion[2];
@@ -167,8 +170,7 @@ void *server(void *ptr)
 
     }
 
-    /*envoie meneur*/
-    int meneur_bool = 0;
+
     if(compteurJoueurs == nbj && meneur_bool==0)
     {
         char message[100];
@@ -184,7 +186,7 @@ void *server(void *ptr)
         }
 
     }
-    
+
 
   	close(newsockfd);
      }
