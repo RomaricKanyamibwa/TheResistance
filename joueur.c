@@ -16,6 +16,9 @@ int server_thread_ret;
 int localServerThreadPortno;
 char server_thread_buffer[1000];
 int num_du_meneur;
+int nb_joueur_participant;
+int nom_proposition_meneur[5] = {-1,-1,-1,-1,-1};
+char *nom_joueur[5];
 
 char mainServerAddr[100];
 char mainServerPort[100];
@@ -139,6 +142,7 @@ void *server_func(void *ptr)
                 sscanf ( server_thread_buffer , "%c %s %d" , &connect, nom, &index);
 
 		printf("nom=%s index=%d\n",nom, index);
+    strcpy(nom_joueur[index],nom);
 
 		gtk_label_set_text ((GtkLabel*)labelPlayer[index], nom);
 	}
@@ -146,8 +150,21 @@ void *server_func(void *ptr)
   {
     int connect;
 
-    sscanf ( server_thread_buffer , "%d %d" , &connect, &num_du_meneur);
+    sscanf ( server_thread_buffer , "%d %d %d" , &connect, &num_du_meneur, &nb_joueur_participant);
     gtk_label_set_text ((GtkLabel*)Meneur[num_du_meneur], "Meneur ");
+
+    if(strcmp(nom_joueur[num_du_meneur],username)==0) //si le joueur est le meneur
+    {
+    char phrase_meneur[256];
+    GtkTextIter iter;
+
+    sprintf(phrase_meneur,"Cher meneur, c'est à vous de jouer ! Vous devez sélectionner %d joueurs pour la prochaine mission.\n", nb_joueur_participant);
+
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+      gtk_text_buffer_insert (buffer, &iter, phrase_meneur, -1);
+
+    }
   }
 
         close(newsockfd);
@@ -161,10 +178,52 @@ void click_boutonProposition(GtkWidget *widget, gpointer window)
      GtkTextIter iter;
 
 	printf("click_boutonProposition\n");
+  int i;
+  int j=0;
+  for(i=0;i<5;i++)
+  {
+    if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkboxPlayer[i])))
+    {
+      nom_proposition_meneur[j]=i;
+      j++;
+    }
+  }
 
+  char phrase_entree[256];
+
+if(j!=nb_joueur_participant)
+{
+  if(j==1)
+  {
+      sprintf(phrase_entree,"Attention tu as rentré %d joueur alors qu'il fallait en rentrer %d. Recommence !\n", j ,nb_joueur_participant);
+
+  }
+  else
+  {
+    sprintf(phrase_entree,"Attention tu as rentré %d joueurs alors qu'il fallait en rentrer %d. Recommence !\n", j ,nb_joueur_participant);
+  }
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+      gtk_text_buffer_insert (buffer, &iter, phrase_entree, -1);
+
+    return;
+
+}
+
+for(i=0;i<j;i++)
+{
+  sprintf(phrase_entree,"%s\n", nom_joueur[nom_proposition_meneur[i]]);
   buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
 gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-     	gtk_text_buffer_insert (buffer, &iter, "uhu\n", -1);
+     	gtk_text_buffer_insert (buffer, &iter, phrase_entree, -1);
+}
+
+sprintf(phrase_entree,"Les %d joueurs que %s a seclectionné sont :\n", nb_joueur_participant, nom_joueur[num_du_meneur]);
+
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+      gtk_text_buffer_insert (buffer, &iter, phrase_entree, -1);
+
 }
 
 void voteOui(GtkWidget *widget, gpointer window) {
@@ -285,6 +344,7 @@ if (argc!=6)
 
   for (i=0;i<5;i++)
   {
+    nom_joueur[i]=calloc(sizeof(char),256); //pour initialiser nom des joueurs
   	labelPlayer[i] = gtk_label_new("Inconnu");
   	gtk_fixed_put(GTK_FIXED(fixed), labelPlayer[i], 0, 100+i*20);
   	gtk_widget_set_size_request(labelPlayer[i],100,20);

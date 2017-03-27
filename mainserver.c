@@ -236,14 +236,15 @@ void sendRoles()//il envoie le
 {
 }
 
-void sendMeneur()//il envoie le meneur
+void sendMeneur()//il envoie le meneur et le nombre de joueur qu'il devra choisir pour la mission
 {
     char message[100];
-    sprintf(message,"8 %d", meneurCourant);
+    sprintf(message,"8 %d %d", meneurCourant, participantsMissions[compteurMissions]);
     broadcast(message);
     meneurCourant = (meneurCourant+1)%nbj;
 
 }
+
 
 void sendEquipe()//forme une equipe
 {
