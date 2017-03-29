@@ -41,6 +41,9 @@ GtkTextBuffer *buffer;
 GtkWidget *text_view;
 GtkWidget *scrolled_window;
 
+/*Prototype fonction*/
+void sendMessageToMainServer(char *mess);
+
 void *server_func(void *ptr)
 {
      int sockfd, newsockfd;
@@ -107,6 +110,8 @@ void *server_func(void *ptr)
     {
       gtk_widget_set_sensitive (checkboxPlayer[i], FALSE);
     }
+
+    gtk_widget_set_sensitive (boutonProposition, FALSE);
   }
 	else if (server_thread_buffer[0]=='4')
 		gtk_widget_set_sensitive (boutonProposition, TRUE);
@@ -138,8 +143,8 @@ void *server_func(void *ptr)
 		char nom[100];
 		int index;
 
-                printf("Commande C\n");
-                sscanf ( server_thread_buffer , "%c %s %d" , &connect, nom, &index);
+    printf("Commande C\n");
+    sscanf ( server_thread_buffer , "%c %s %d" , &connect, nom, &index);
 
 		printf("nom=%s index=%d\n",nom, index);
     strcpy(nom_joueur[index],nom);
@@ -150,21 +155,100 @@ void *server_func(void *ptr)
   {
     int connect;
 
+    gtk_widget_set_sensitive (  radiovotePlayer[0], TRUE);
+    gtk_widget_set_sensitive (  radiovotePlayer[1], TRUE);
+
     sscanf ( server_thread_buffer , "%d %d %d" , &connect, &num_du_meneur, &nb_joueur_participant);
-    gtk_label_set_text ((GtkLabel*)Meneur[num_du_meneur], "Meneur ");
+
+    int i;
+    for(i=0;i<5;i++)
+    {
+      if(i==num_du_meneur)
+         gtk_label_set_text ((GtkLabel*)Meneur[i], "Meneur ");
+
+      else
+      {
+        gtk_label_set_text ((GtkLabel*)Meneur[i], "");
+      }
+
+    }
 
     if(strcmp(nom_joueur[num_du_meneur],username)==0) //si le joueur est le meneur
     {
-    char phrase_meneur[256];
-    GtkTextIter iter;
 
-    sprintf(phrase_meneur,"Cher meneur, c'est à vous de jouer ! Vous devez sélectionner %d joueurs pour la prochaine mission.\n", nb_joueur_participant);
+      gtk_widget_set_sensitive (  radiovotePlayer[0], FALSE);
+      gtk_widget_set_sensitive (  radiovotePlayer[1], FALSE);
+      gtk_widget_set_sensitive (boutonProposition, TRUE);
 
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+      int j; 
+
+      for(j=0;j<5;j++)
+      {
+        gtk_widget_set_sensitive (checkboxPlayer[j], TRUE);
+      }
+    
+      char phrase_meneur[256];
+      GtkTextIter iter;
+
+      sprintf(phrase_meneur,"Cher meneur, c'est à vous de jouer ! Vous devez sélectionner %d joueurs pour la prochaine mission.\n", nb_joueur_participant);
+
+      buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+      gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
       gtk_text_buffer_insert (buffer, &iter, phrase_meneur, -1);
 
     }
+  }
+
+  
+  else if (server_thread_buffer[0]=='M' && strcmp(nom_joueur[num_du_meneur],username)!=0) //si le joueur n'est pas le meneur
+  {
+    char connect;
+    char mess[500];
+    GtkTextIter iter;
+    char *gens[3];
+    char gens_cancatenes[256];
+    int j;
+
+    int i;
+    for(i=0;i<3;i++)
+    {
+      gens[i] = calloc(sizeof(char),256);
+
+    }
+
+    printf("Commande M\n");
+    sscanf ( server_thread_buffer , "%c %d %s %s %s" , &connect, &j, gens[0], gens[1], gens[2]);
+
+    for(i=0;i<j;i++)
+    {
+        strcat(gens_cancatenes, gens[i]);
+        strcat(gens_cancatenes, " ");
+    }
+
+    sprintf(mess,"Voici les personnes sélectionnées par le meneur pour la prochaine mission %s. \n Etes-vous d'accord avec son choix ? A vous de voter !", gens_cancatenes);
+
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+      gtk_text_buffer_insert (buffer, &iter, mess, -1);
+
+  }
+
+  else if (server_thread_buffer[0]=='Z')
+  {
+    char connect;
+    char mess[500];
+    GtkTextIter iter;
+
+    gtk_widget_set_sensitive (  radiovotePlayer[0], TRUE);
+    gtk_widget_set_sensitive (  radiovotePlayer[1], TRUE);
+
+    printf("Commande Zs\n");
+    sscanf ( server_thread_buffer , "%c %s" , &connect, mess);
+
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+    gtk_text_buffer_insert (buffer, &iter, mess, -1);
+
   }
 
         close(newsockfd);
@@ -210,13 +294,26 @@ gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
 
 }
 
+char gens_choisis_par_meneur_pour_server[256];
+sprintf(gens_choisis_par_meneur_pour_server, "E %d ", j);
+char anex[3];
+
+
 for(i=0;i<j;i++)
 {
   sprintf(phrase_entree,"%s\n", nom_joueur[nom_proposition_meneur[i]]);
   buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
 gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
      	gtk_text_buffer_insert (buffer, &iter, phrase_entree, -1);
+
+      /*message de la listes de gens choisi par le meneur à envoyer au mainserver*/
+      sprintf(anex, "%d", nom_proposition_meneur[i]);
+      strcat(gens_choisis_par_meneur_pour_server, anex);
+      strcat(gens_choisis_par_meneur_pour_server, " ");
+
 }
+
+ sendMessageToMainServer(gens_choisis_par_meneur_pour_server);
 
 sprintf(phrase_entree,"Les %d joueurs que %s a seclectionné sont :\n", nb_joueur_participant, nom_joueur[num_du_meneur]);
 
@@ -228,10 +325,24 @@ gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
 
 void voteOui(GtkWidget *widget, gpointer window) {
 		printf("Oui\n");
+    gtk_widget_set_sensitive (  radiovotePlayer[0], FALSE);
+    gtk_widget_set_sensitive (  radiovotePlayer[1], FALSE);
+
+    char mess[5];
+    sprintf(mess,"V 1");
+    sendMessageToMainServer(mess);
+
+
 }
 
 void voteNon(GtkWidget *widget, gpointer window) {
 		printf("Non\n");
+        gtk_widget_set_sensitive (  radiovotePlayer[0], FALSE);
+    gtk_widget_set_sensitive (  radiovotePlayer[1], FALSE);
+
+    char mess[5];
+    sprintf(mess,"V 0");
+    sendMessageToMainServer(mess);
 }
 
 void sendMessageToMainServer(char *mess)
