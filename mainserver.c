@@ -1,4 +1,4 @@
-#include <stdio.h>
+  #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -96,6 +96,9 @@ void *server(void *ptr)
      int envoie_roles = 0;
      /*envoie meneur*/
     int meneur_bool = 0;
+
+    int nums_equipe_proposee_meneur[3] = {-1,-1,-1};
+
     while (1)
     {
     newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);//accept est un appel system bloquant
@@ -127,7 +130,7 @@ void *server(void *ptr)
 		compteurJoueurs++;
 	}
 
-    int nums_equipe_proposee_meneur[3] = {-1,-1,-1};
+
 
     if ( serverbuffer[0] == 'E' && compteurJoueurs == nbj)
     {
@@ -152,7 +155,7 @@ void *server(void *ptr)
 
     }
 
-    if ( serverbuffer[0] == 'V' && voteMeneur_voteMission==1)
+    if ( serverbuffer[0] == 'V' && voteMeneur_voteMission==1) //vote de l equipe
     {
         char connect;
         int vote;
@@ -169,22 +172,24 @@ void *server(void *ptr)
         }
         if(compteurVotes==nbj) //tout le monde à voté
         {
-            if(compteurVotes_oui == nbj/2) //le oui gagne
+            if(compteurVotes_oui > nbj/2) //le oui gagne
             {
                 meneur_bool = 1; //on change pas encore de meneur
-                compteurMissions++;
                 compteurVotes_oui = 1;
                 compteurVotes = 1;
-                voteMeneur_voteMission = 0;
+                voteMeneur_voteMission = 0; // on passe au vote a l interieur de la mission
 
                 int i;
                 char mess[256];
                 for(i=0;i<3;i++)
                 {
+                  printf("%d%d BLABLA\n", nums_equipe_proposee_meneur[0], nums_equipe_proposee_meneur[1]);
                     if(nums_equipe_proposee_meneur[i]!=-1)
                     {
-                        sprintf(mess, "Z Bravo vous être sélectionné. Si vous voulez que la mission réussisse tapez oui, sinon non.\n");
+                        broadcast("N Mission en cours...\n");
+                        sprintf(mess, "Z \n");
                         sendMessage(nums_equipe_proposee_meneur[i],mess);
+                        nums_equipe_proposee_meneur[i] = -1; //on reinitialise pour le vote au tout suivant
                     }
                 }
             }
@@ -196,10 +201,11 @@ void *server(void *ptr)
 
             }
         }
+        serverbuffer[0] = ' '; //sinon rentre dans V d'après aloirs que pas encore eu de vote 
     }
 
 
-    if ( serverbuffer[0] == 'V' && voteMeneur_voteMission==0)
+    if ( serverbuffer[0] == 'V' && voteMeneur_voteMission==0) // vote à l interieur de la mission
     {
         char connect;
         int vote;
@@ -208,41 +214,41 @@ void *server(void *ptr)
         sscanf ( serverbuffer , "%c %d" , &connect , &vote);
 
         compteurVotes_mission++;
-
+        printf("%d%d%d\n",compteurVotes_mission,participantsMissions[compteurMissions],compteurVotes_oui_mission );
         if(vote)
         {
             compteurVotes_oui_mission++;
+            printf("%d%d%d\n",compteurVotes_mission,participantsMissions[compteurMissions],compteurVotes_oui_mission );
+            printf("VOTE\n");
         }
-        if(compteurVotes==participantsMissions[compteurMissions]) //tout le monde à voté
+        if(compteurVotes_mission==participantsMissions[compteurMissions]) //tout le monde à voté
         {
-            if(compteurVotes_oui == participantsMissions[compteurMissions]) //le oui gagne
+            printf("TOUT LE MONDE A VOTE\n");
+            printf("%d%d%d\n",compteurVotes_mission,participantsMissions[compteurMissions],compteurVotes_oui_mission );
+            if(compteurVotes_oui_mission == participantsMissions[compteurMissions]) //le oui gagne
             {
+                printf("LE OUI GANGE\n");
                 meneur_bool = 0; //on change de meneur
-                compteurVotes_oui = 1;
-                compteurVotes = 1;
-                voteMeneur_voteMission = 1;
+                compteurVotes_oui_mission = 0;
+                compteurVotes_mission = 0;
+                voteMeneur_voteMission = 1; // on passe au vote de lequipe
                 compteurReussites++;
 
-                int i;
-                char mess[256];
-                for(i=0;i<3;i++)
-                {
-                    if(nums_equipe_proposee_meneur[i]!=-1)
-                    {
-                        sprintf(mess, "Z Bravo vous être sélectionné. Si vous voulez que la mission réussisse tapez oui, sinon non.\n");
-                        sendMessage(nums_equipe_proposee_meneur[i],mess);
-                    }
-                }
+                broadcast("N La mission a réussi !\n");
             }
             else //le non gagne
             {
                 meneur_bool = 0;//on change de meneur
-                compteurVotes_oui = 1;
-                compteurVotes = 1;
+                compteurVotes_oui_mission = 0;
+                compteurVotes_mission = 0;
                 voteMeneur_voteMission = 1;
+
+                broadcast("N La mission a échoué !\n");
 
             }
         }
+        compteurMissions++;
+
     }
 
     if(compteurJoueurs == nbj && envoie_roles == 0)
@@ -271,7 +277,7 @@ void *server(void *ptr)
             char mess[100];
             if(tableauJoueurs[i].role ==0) //gentils
             {
-                sprintf(mess,"6 %d Je suis un rebelle", i);
+                sprintf(mess,"6 %d Je suis un rebel", i);
                 sendMessage(i,mess);
             }
             if(tableauJoueurs[i].role ==1) //espion
@@ -306,6 +312,23 @@ void *server(void *ptr)
             }
         }
 
+    }
+
+    if(compteurReussites==3)
+    {
+      broadcast("N Les Rebels ont gagné !");
+      close(newsockfd);
+      close(sockfd);
+      return;
+
+
+    }
+    if(compteurMissions - compteurReussites == 3)
+    {
+      broadcast("N Les Espions ont gagné !");
+      close(newsockfd);
+      close(sockfd);
+      return;
     }
 
 

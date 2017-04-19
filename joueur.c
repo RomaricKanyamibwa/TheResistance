@@ -125,6 +125,7 @@ void *server_func(void *ptr)
 
     sscanf ( server_thread_buffer , "%d %d %s" , &connect, &num_du_rebelle, phrase);
     gtk_label_set_text ((GtkLabel*)rolePlayer[num_du_rebelle], "Rebelle");
+
   }
 	else if (server_thread_buffer[0]=='7')
   {
@@ -134,6 +135,7 @@ void *server_func(void *ptr)
     char phrase[100];
 
     sscanf ( server_thread_buffer , "%d %d %d %s" , &connect, &num_du_rebelle, &num_autre_rebelle, phrase);
+
     gtk_label_set_text ((GtkLabel*)rolePlayer[num_du_rebelle], "Espion ");
     gtk_label_set_text ((GtkLabel*)rolePlayer[num_autre_rebelle], "Espion ");
   }
@@ -155,9 +157,6 @@ void *server_func(void *ptr)
   {
     int connect;
 
-    gtk_widget_set_sensitive (  radiovotePlayer[0], TRUE);
-    gtk_widget_set_sensitive (  radiovotePlayer[1], TRUE);
-
     sscanf ( server_thread_buffer , "%d %d %d" , &connect, &num_du_meneur, &nb_joueur_participant);
 
     int i;
@@ -173,11 +172,12 @@ void *server_func(void *ptr)
 
     }
 
+    gtk_widget_set_sensitive (  radiovotePlayer[0], FALSE); //enleve l activation des boutons oui non pour tout le monde
+    gtk_widget_set_sensitive (  radiovotePlayer[1], FALSE);
+
     if(strcmp(nom_joueur[num_du_meneur],username)==0) //si le joueur est le meneur
     {
 
-      gtk_widget_set_sensitive (  radiovotePlayer[0], FALSE);
-      gtk_widget_set_sensitive (  radiovotePlayer[1], FALSE);
       gtk_widget_set_sensitive (boutonProposition, TRUE);
 
       int j; 
@@ -216,6 +216,9 @@ void *server_func(void *ptr)
 
     }
 
+    gtk_widget_set_sensitive (  radiovotePlayer[0], TRUE); // active les boutons oui non 
+    gtk_widget_set_sensitive (  radiovotePlayer[1], TRUE);
+
     printf("Commande M\n");
     sscanf ( server_thread_buffer , "%c %d %s %s %s" , &connect, &j, gens[0], gens[1], gens[2]);
 
@@ -243,11 +246,29 @@ gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
     gtk_widget_set_sensitive (  radiovotePlayer[1], TRUE);
 
     printf("Commande Zs\n");
-    sscanf ( server_thread_buffer , "%c %s" , &connect, mess);
+    sprintf (mess, "Bravo vous être sélectionné. Si vous voulez que la mission réussisse tapez oui, sinon non.\n");
 
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
     gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
     gtk_text_buffer_insert (buffer, &iter, mess, -1);
+
+  }
+
+
+  else if(server_thread_buffer[0]=='N') // envoie un message à toutle monde
+  {
+    char connect;
+    GtkTextIter iter;
+    char *content=malloc(sizeof(char)*256);
+
+    printf("Commande N\n");
+    content = server_thread_buffer; 
+    content++;
+    content++;
+
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+    gtk_text_buffer_insert (buffer, &iter, content, -1);
 
   }
 
@@ -465,7 +486,7 @@ if (argc!=6)
   	gtk_fixed_put(GTK_FIXED(fixed), checkboxPlayer[i], 100, 100+i*20);
   	gtk_widget_set_size_request(checkboxPlayer[i],30,20);
 
-  	rolePlayer[i] = gtk_label_new("Rebelle");
+  	rolePlayer[i] = gtk_label_new("?");
   	gtk_fixed_put(GTK_FIXED(fixed), rolePlayer[i], 150, 100+i*20);
   	gtk_widget_set_size_request(rolePlayer[i],60,20);
 
