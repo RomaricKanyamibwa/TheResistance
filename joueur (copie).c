@@ -51,7 +51,6 @@ typedef struct data
   GtkWidget *n2;
   gboolean n3;
   char *c1;
-  GtkLabel* l1;
 
 }gp;
 
@@ -75,23 +74,6 @@ static gboolean gdk_toggle_button_get_active(gpointer data0)
   return G_SOURCE_REMOVE;
 }
 
-static gboolean gdk_widget_set_sensitive(gpointer data0)
-{
-  gp* data = (gp*) data0; 
-  gtk_widget_set_sensitive (data->n1, data->n3);
-  free(data0);
-  return G_SOURCE_REMOVE;
-}
-
-static gboolean gdk_label_set_text(gpointer data0)
-{
-  gp* data = (gp*) data0; 
-  gtk_label_set_text (data->l1, data->c1);
-  free(data0);
-  return G_SOURCE_REMOVE;
-
-}
-
 static gboolean gdk_ecrire(gpointer data0)
 {
   gp* data = (gp*) data0; 
@@ -104,7 +86,6 @@ static gboolean gdk_ecrire(gpointer data0)
   free(data0);
   return G_SOURCE_REMOVE;
 }
-
 
 
 /*Prototype fonction*/
@@ -174,12 +155,7 @@ void *server_func(void *ptr)
     gdk_threads_add_idle (gdk_toggle_button_set_active, (gpointer) data);
   }
 	else if (server_thread_buffer[0]=='2')
-  {
-		gp *data = calloc(sizeof(gp),1);
-    data->n1 = checkboxPlayer[0];
-    data->n3 = TRUE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
-  }
+		gtk_widget_set_sensitive (checkboxPlayer[0], TRUE);
 	else if (server_thread_buffer[0]=='3')
   {    
     int connect;
@@ -189,31 +165,15 @@ void *server_func(void *ptr)
     int i;
     for(i=0;i<5;i++)
     {
-      gp *data = calloc(sizeof(gp),1);
-      data->n1 = checkboxPlayer[i];
-      data->n3 = TRUE;
-      gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
+      gtk_widget_set_sensitive (checkboxPlayer[i], FALSE);
     }
 
-    gp *data = calloc(sizeof(gp),1);
-    data->n1 = boutonProposition;
-    data->n3 = FALSE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
+    gtk_widget_set_sensitive (boutonProposition, FALSE);
   }
 	else if (server_thread_buffer[0]=='4')
-  {
-		gp *data = calloc(sizeof(gp),1);
-    data->n1 = boutonProposition;
-    data->n3 = TRUE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
-  }
+		gtk_widget_set_sensitive (boutonProposition, TRUE);
 	else if (server_thread_buffer[0]=='5')
-  {
-		gp *data = calloc(sizeof(gp),1);
-    data->n1 = boutonProposition;
-    data->n3 = FALSE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
-  }
+		gtk_widget_set_sensitive (boutonProposition, FALSE);
 	else if (server_thread_buffer[0]=='6')
   {
     int connect;
@@ -221,11 +181,8 @@ void *server_func(void *ptr)
     char phrase[100];
 
     sscanf ( server_thread_buffer , "%d %d %s" , &connect, &num_du_rebelle, phrase);
+    gtk_label_set_text ((GtkLabel*)rolePlayer[num_du_rebelle], "Rebelle");
 
-    gp *data = calloc(sizeof(gp),1);
-    data->l1 = (GtkLabel*)rolePlayer[num_du_rebelle];
-    data->c1 = "Rebelle";
-    gdk_threads_add_idle(gdk_label_set_text, (gpointer) data);
   }
 	else if (server_thread_buffer[0]=='7')
   {
@@ -236,16 +193,8 @@ void *server_func(void *ptr)
 
     sscanf ( server_thread_buffer , "%d %d %d %s" , &connect, &num_du_rebelle, &num_autre_rebelle, phrase);
 
-    gp *data = calloc(sizeof(gp),1);
-    data->l1 = (GtkLabel*)rolePlayer[num_du_rebelle];
-    data->c1 = "Espion";
-    gdk_threads_add_idle(gdk_label_set_text, (gpointer) data);
-
-    gp *data1 = calloc(sizeof(gp),1);
-    data1->l1 = (GtkLabel*)rolePlayer[num_autre_rebelle];
-    data1->c1 = "Espion";
-    gdk_threads_add_idle(gdk_label_set_text, (gpointer) data1);
-    
+    gtk_label_set_text ((GtkLabel*)rolePlayer[num_du_rebelle], "Espion ");
+    gtk_label_set_text ((GtkLabel*)rolePlayer[num_autre_rebelle], "Espion ");
   }
 	else if (server_thread_buffer[0]=='C')
 	{
@@ -259,10 +208,7 @@ void *server_func(void *ptr)
 		printf("nom=%s index=%d\n",nom, index);
     strcpy(nom_joueur[index],nom);
 
-    gp *data = calloc(sizeof(gp),1);
-    data->l1 = (GtkLabel*)labelPlayer[index];
-    data->c1 = nom;
-    gdk_threads_add_idle(gdk_label_set_text, (gpointer) data);
+		gtk_label_set_text ((GtkLabel*)labelPlayer[index], nom);
 	}
   else if (server_thread_buffer[0]=='8')
   {
@@ -274,59 +220,38 @@ void *server_func(void *ptr)
     for(i=0;i<5;i++)
     {
       if(i==num_du_meneur)
-      {
-         gp *data = calloc(sizeof(gp),1);
-         data->l1 = (GtkLabel*)Meneur[i];
-         data->c1 = "Meneur";
-         gdk_threads_add_idle(gdk_label_set_text, (gpointer) data);
-      }
+         gtk_label_set_text ((GtkLabel*)Meneur[i], "Meneur ");
 
       else
       {
-         gp *data = calloc(sizeof(gp),1);
-         data->l1 = (GtkLabel*)Meneur[i];
-         data->c1 = "";
-         gdk_threads_add_idle(gdk_label_set_text, (gpointer) data);
+        gtk_label_set_text ((GtkLabel*)Meneur[i], "");
       }
 
     }
 
-    gp *data = calloc(sizeof(gp),1); //enleve l activation des boutons oui non pour tout le monde
-    data->n1 = radiovotePlayer[0];
-    data->n3 = FALSE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
-    gp *data1 = calloc(sizeof(gp),1);
-    data1->n1 = radiovotePlayer[1];
-    data1->n3 = FALSE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data1);
-
+    gtk_widget_set_sensitive (  radiovotePlayer[0], FALSE); //enleve l activation des boutons oui non pour tout le monde
+    gtk_widget_set_sensitive (  radiovotePlayer[1], FALSE);
 
     if(strcmp(nom_joueur[num_du_meneur],username)==0) //si le joueur est le meneur
     {
-      gp *data2 = calloc(sizeof(gp),1);
-      data2->n1 = boutonProposition;
-      data2->n3 = TRUE;
-      gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data2);
+
+      gtk_widget_set_sensitive (boutonProposition, TRUE);
 
       int j; 
 
       for(j=0;j<5;j++)
       {
-        gp *data3 = calloc(sizeof(gp),1);
-        data3->n1 = checkboxPlayer[j];
-        data3->n3 = TRUE;
-        gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data3);
+        gtk_widget_set_sensitive (checkboxPlayer[j], TRUE);
       }
     
-      char phrase_meneur[256];
+      char *phrase_meneur = calloc(sizeof(char),256);
       GtkTextIter iter;
 
       sprintf(phrase_meneur,"Cher meneur, c'est à vous de jouer ! Vous devez sélectionner %d joueurs pour la prochaine mission.\n", nb_joueur_participant);
 
-      buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-      gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-      gtk_text_buffer_insert (buffer, &iter, phrase_meneur, -1);
-
+      gp *data = calloc(sizeof(gp),1);
+      data->c1 = phrase_meneur;
+      gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
     }
   }
 
@@ -334,7 +259,7 @@ void *server_func(void *ptr)
   else if (server_thread_buffer[0]=='M' && strcmp(nom_joueur[num_du_meneur],username)!=0) //si le joueur n'est pas le meneur
   {
     char connect;
-    char mess[500];
+    char *mess = calloc(sizeof(char),500);
     GtkTextIter iter;
     char *gens[3];
     char gens_cancatenes[256];
@@ -347,16 +272,8 @@ void *server_func(void *ptr)
 
     }
 
-
-    gp *data = calloc(sizeof(gp),1); //active des boutons oui non 
-    data->n1 = radiovotePlayer[0];
-    data->n3 = TRUE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
-    gp *data1 = calloc(sizeof(gp),1);
-    data1->n1 = radiovotePlayer[1];
-    data1->n3 = TRUE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data1);
-
+    gtk_widget_set_sensitive (  radiovotePlayer[0], TRUE); // active les boutons oui non 
+    gtk_widget_set_sensitive (  radiovotePlayer[1], TRUE);
 
     printf("Commande M\n");
     sscanf ( server_thread_buffer , "%c %d %s %s %s" , &connect, &j, gens[0], gens[1], gens[2]);
@@ -369,34 +286,27 @@ void *server_func(void *ptr)
 
     sprintf(mess,"Voici les personnes sélectionnées par le meneur pour la prochaine mission %s. \n Etes-vous d'accord avec son choix ? A vous de voter !", gens_cancatenes);
 
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-    gtk_text_buffer_insert (buffer, &iter, mess, -1);
+    gp *data = calloc(sizeof(gp),1);
+    data->c1 = mess;
+    gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
 
   }
 
   else if (server_thread_buffer[0]=='Z')
   {
     char connect;
-    char mess[500];
+    char *mess=calloc(sizeof(char),500);
     GtkTextIter iter;
 
-    gp *data = calloc(sizeof(gp),1); //active des boutons oui non 
-    data->n1 = radiovotePlayer[0];
-    data->n3 = TRUE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
-    gp *data1 = calloc(sizeof(gp),1);
-    data1->n1 = radiovotePlayer[1];
-    data1->n3 = TRUE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data1);
+    gtk_widget_set_sensitive (  radiovotePlayer[0], TRUE);
+    gtk_widget_set_sensitive (  radiovotePlayer[1], TRUE);
 
     printf("Commande Zs\n");
     sprintf (mess, "Bravo vous être sélectionné. Si vous voulez que la mission réussisse tapez oui, sinon non.\n");
 
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-    gtk_text_buffer_insert (buffer, &iter, mess, -1);
-
+    gp *data = calloc(sizeof(gp),1);
+    data->c1 = mess;
+    gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
   }
 
 
@@ -411,10 +321,9 @@ void *server_func(void *ptr)
     content++;
     content++;
 
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-    gtk_text_buffer_insert (buffer, &iter, content, -1);
-
+    gp *data = calloc(sizeof(gp),1);
+    data->c1 = content;
+    gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
   }
 
         close(newsockfd);
@@ -447,7 +356,7 @@ void click_boutonProposition(GtkWidget *widget, gpointer window)
 
   }
 
-  char phrase_entree[256];
+  char *phrase_entree=calloc(sizeof(char),256);
 
   if(j!=nb_joueur_participant)
   {
@@ -460,10 +369,9 @@ void click_boutonProposition(GtkWidget *widget, gpointer window)
       sprintf(phrase_entree,"Attention tu as rentré %d joueurs alors qu'il fallait en rentrer %d. Recommence !\n", j ,nb_joueur_participant);
     }
     
-
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-    gtk_text_buffer_insert (buffer, &iter, phrase_entree, -1);
+    gp *data = calloc(sizeof(gp),1);
+    data->c1 = phrase_entree;
+    gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
     return;
   }
 
@@ -475,9 +383,10 @@ void click_boutonProposition(GtkWidget *widget, gpointer window)
   for(i=0;i<j;i++)
   {
     sprintf(phrase_entree,"%s\n", nom_joueur[nom_proposition_meneur[i]]);
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-    gtk_text_buffer_insert (buffer, &iter, phrase_entree, -1);
+
+    gp *data = calloc(sizeof(gp),1);
+    data->c1 = phrase_entree;
+    gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
 
     /*message de la listes de gens choisi par le meneur à envoyer au mainserver*/
     sprintf(anex, "%d", nom_proposition_meneur[i]);
@@ -489,9 +398,9 @@ void click_boutonProposition(GtkWidget *widget, gpointer window)
 
   sprintf(phrase_entree,"Les %d joueurs que %s a seclectionné sont :\n", nb_joueur_participant, nom_joueur[num_du_meneur]);
 
-  buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-  gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-  gtk_text_buffer_insert (buffer, &iter, phrase_entree, -1);
+  gp *data = calloc(sizeof(gp),1);
+  data->c1 = phrase_entree;
+  gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
 
   gtk_widget_set_sensitive (boutonProposition, FALSE);
 }

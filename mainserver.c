@@ -18,7 +18,7 @@ int nbj;  // compteur joueur == nbj pour commencer
 int nbespions;
 int meneurCourant;
 int compteurJoueurs; // pour compter les joueurs
-int compteurMissions; // pour savoir à quelle mission on est
+int compteurMissions = 0; // pour savoir à quelle mission on est
 int compteurVotes = 1; // combien de votes ont été éffectués
 int compteurVotes_oui = 1; //le meneur vote oui
 int compteurVotes_mission = 0; // combien de votes ont été éffectués
@@ -130,8 +130,6 @@ void *server(void *ptr)
 		compteurJoueurs++;
 	}
 
-
-
     if ( serverbuffer[0] == 'E' && compteurJoueurs == nbj)
     {
         char connect;
@@ -233,6 +231,7 @@ void *server(void *ptr)
                 compteurVotes_mission = 0;
                 voteMeneur_voteMission = 1; // on passe au vote de lequipe
                 compteurReussites++;
+                compteurMissions++;
 
                 broadcast("N La mission a réussi !\n");
             }
@@ -242,12 +241,12 @@ void *server(void *ptr)
                 compteurVotes_oui_mission = 0;
                 compteurVotes_mission = 0;
                 voteMeneur_voteMission = 1;
+                compteurMissions++;
 
                 broadcast("N La mission a échoué !\n");
 
             }
         }
-        compteurMissions++;
 
     }
 
@@ -314,7 +313,7 @@ void *server(void *ptr)
 
     }
 
-    if(compteurReussites==3)
+    if(compteurReussites == 3)
     {
       broadcast("N Les Rebels ont gagné !");
       close(newsockfd);
