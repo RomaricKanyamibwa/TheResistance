@@ -1,4 +1,4 @@
-#include <stdio.h>
+f#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -77,7 +77,7 @@ static gboolean gdk_toggle_button_get_active(gpointer data0)
 
 static gboolean gdk_widget_set_sensitive(gpointer data0)
 {
-  gp* data = (gp*) data0; 
+  gp* data = (gp*) data0;
   gtk_widget_set_sensitive (data->n1, data->n3);
   free(data0);
   return G_SOURCE_REMOVE;
@@ -191,7 +191,7 @@ void *server_func(void *ptr)
     {
       gp *data = calloc(sizeof(gp),1);
       data->n1 = checkboxPlayer[i];
-      data->n3 = TRUE;
+      data->n3 = FALSE;
       gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
     }
 
@@ -263,6 +263,7 @@ void *server_func(void *ptr)
     data->l1 = (GtkLabel*)labelPlayer[index];
     data->c1 = nom;
     gdk_threads_add_idle(gdk_label_set_text, (gpointer) data);
+    free(data);
 	}
   else if (server_thread_buffer[0]=='8')
   {
@@ -346,6 +347,7 @@ void *server_func(void *ptr)
       gens[i] = calloc(sizeof(char),256);
 
     }
+
 
 
     gp *data = calloc(sizeof(gp),1); //active des boutons oui non 
