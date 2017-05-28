@@ -403,16 +403,61 @@ static void producer_operation(int sfd)
 {
 	while(status_on)
 	{
-		// Rajouter du code ici
+		int peer_sfd = accept(sfd,NULL,NULL);
+		if(peer_sfd<0)
+		{
+			perror("\nACCEPT FAILLURE");
+			continue;
+		}
+		if(pthread_mutex_lock(&buffer_lock_mtx)!=0)
+			perror("\nLOCK prod error");
+		while(is_buffer_full())
+		{
+			if(pthread_cond_wait(&buffer_not_full_cond,&buffer_lock_mtx)!=0)
+				perror("\nWait prod error");
+		}
+
+		buffer_add(peer_sfd);
+
+		if(pthread_cond_broadcast(&buffer_not_empty_cond)!=0)
+			perror("\nBroadcast prod ERROR");
+		if(pthread_mutex_unlock(&buffer_lock_mtx)!=0)
+			perror("\nUNLOCK prod error");
 	}
-	destroy_buffer();
+    destroy_buffer();
 }
+
 
 static void* consumer_operation()
 {
 	while(status_on)
 	{
 		// Rajouter du code ici
+        if(pthread_mutex_lock(&buffer_lock_mtx)!=0)
+           perror("\nLOCK consumer ERROR");
+
+		while(is_buffer_empty())
+		{
+			if(pthread_cond_wait(&buffer_not_empty_cond,&buffer_lock_mtx)!=0)
+				perror("\nWAIT cons ERROR");
+		}
+
+		int peer_sfd = buffer_get();
+
+		if(peer_sfd < 0)
+		{
+			perror("\nFAILED ACCEPT SOCKET");
+			pthread_mutex_unlock(&buffer_lock_mtx)!=0;
+			continue;
+		}
+
+		if(pthread_cond_broadcast(&buffer_not_full_cond)!=0)
+			perror("\nBROADCAST Cons Error");
+		if(pthread_mutex_unlock(&buffer_lock_mtx)!=0)
+			perror("\nUnlock Cons error!");
+
+		manage_single_request(peer_sfd);
+        close(peer_sfd);
 	}
 	pthread_exit(pthread_self);
 }
@@ -442,11 +487,19 @@ static void* manage_request_response_per_thread(void *peer_sfd)
 
 static void perform_thread_operation(int sfd)
 {
-     	print("PERFORMING USING THREADS");
+    print("PERFORMING USING THREADS");
 	pthread_t tid;
 	while(status_on)
 	{
-		// Rajouter du code ici
+		int *peer_fd = malloc(sizeof(int));
+		*peer_fd = accept(sfd,NULL,NULL);
+		if(*peer_sfd == -1)
+		{
+			perror("\nACCEPT FAILURE");
+			continue;
+		}
+		pthread_create(&tid,NULL,manage_request_response_per_thread,peer_fd);
+        pthread_detach(tid);
 	}
 }
 
@@ -514,7 +567,7 @@ strategy_t configure_server(int argc,char *argv[])
 				operation = perform_process_operation;
 				option_count++;
 				break;
-			case 'w'://mode thread pull
+			case 'w'://mode thread pool
 				//strcpy(strategy_name,"Thread Pool");
 				worker_max = atoi(optarg);
 				operation = &perform_thread_pool_operation;
