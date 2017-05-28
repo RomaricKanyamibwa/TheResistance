@@ -356,7 +356,7 @@ static void perform_process_operation(int sfd)
             continue;
         }
         pid_t pid=fork();
-        print("Fork!!!\n");
+        //print("Fork!!!\n");
         if(pid < 0)
 		{
             perror("FORK error");
@@ -364,14 +364,17 @@ static void perform_process_operation(int sfd)
         }
         if(pid==0)
         {
-            print("Fils!!\n");
+            //print("Fils!!\n");
             manage_single_request(peer_fd);
             exit(0);
         }
         else
         {
-            print("Father:Wait fils!!\n");
-            while(waitpid(-1,NULL,WNOHANG)>0);
+            //print("Father:Wait fils!!\n");
+            while(waitpid(-1,NULL,WNOHANG)>0)
+            {
+
+            }
         }
         close(peer_fd)
 	}
