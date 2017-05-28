@@ -70,8 +70,8 @@ static gboolean gdk_toggle_button_get_active(gpointer data0)
   return_fct_gdk = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->n1));
   free(data0);
   if(return_fct_gdk)
-    printf("TRUETURurteiter\n");
-  printf("GDK Thread zerzerzer\n");
+    //printf("TRUETURurteiter\n");
+  //printf("GDK Thread zerzerzer\n");
   return G_SOURCE_REMOVE;
 }
 
@@ -86,7 +86,11 @@ static gboolean gdk_widget_set_sensitive(gpointer data0)
 static gboolean gdk_label_set_text(gpointer data0)
 {
   gp* data = (gp*) data0;
-  gtk_label_set_text (data->l1, data->c1);
+  char *text=calloc(sizeof(char),100);;
+strcpy(text,data->c1);
+printf("text to set:%s\n",text);
+  GtkLabel* label=data->l1;
+  gtk_label_set_text (label,text);
   free(data);
   return G_SOURCE_REMOVE;
 
@@ -260,8 +264,9 @@ void *server_func(void *ptr)
     strcpy(nom_joueur[index],nom);
 
     gp *data = calloc(sizeof(gp),1);
+    data->c1=calloc(sizeof(char),100);
     data->l1 = (GtkLabel*)labelPlayer[index];
-    data->c1 = nom;
+    strcpy(data->c1,nom);
     gdk_threads_add_idle(gdk_label_set_text, (gpointer) data);
 	}
   else if (server_thread_buffer[0]=='8')
