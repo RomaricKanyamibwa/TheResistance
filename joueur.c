@@ -87,8 +87,7 @@ static gboolean gdk_label_set_text(gpointer data0)
 {
   gp* data = (gp*) data0;
   char *text=calloc(sizeof(char),100);;
-strcpy(text,data->c1);
-printf("text to set:%s\n",text);
+  strcpy(text,data->c1);
   GtkLabel* label=data->l1;
   gtk_label_set_text (label,text);
   free(data);
@@ -324,13 +323,12 @@ void *server_func(void *ptr)
       }
 
       char phrase_meneur[256];
-      GtkTextIter iter;
-
+      gp *data = calloc(sizeof(gp),1);
+      data->c1=calloc(sizeof(char),256);
       sprintf(phrase_meneur,"Cher meneur, c'est à vous de jouer ! Vous devez sélectionner %d joueurs pour la prochaine mission.\n\n", nb_joueur_participant);
 
-      buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-      gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-      gtk_text_buffer_insert (buffer, &iter, phrase_meneur, -1);
+      strcpy(data->c1,phrase_meneur);
+      gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
 
     }
   }
@@ -340,7 +338,6 @@ void *server_func(void *ptr)
   {
     char connect;
     char mess[500];
-    GtkTextIter iter;
     char *gens[3];
     char gens_cancatenes[256];
     int j;
@@ -373,19 +370,19 @@ void *server_func(void *ptr)
         strcat(gens_cancatenes, " ");
     }
 
+
     sprintf(mess,"Voici les personnes sélectionnées par le meneur pour la prochaine mission %s. \n Etes-vous d'accord avec son choix ? A vous de voter !\n\n", gens_cancatenes);
 
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-    gtk_text_buffer_insert (buffer, &iter, mess, -1);
-
+    gp *data3 = calloc(sizeof(gp),1);
+    data3->c1=calloc(sizeof(char),500);
+    strcpy(data3->c1,mess);
+    gdk_threads_add_idle(gdk_ecrire, (gpointer) data3);
   }
 
   else if (server_thread_buffer[0]=='Z')
   {
     char connect;
     char mess[500];
-    GtkTextIter iter;
 
     gp *data = calloc(sizeof(gp),1); //active des boutons oui non
     data->n1 = radiovotePlayer[0];
@@ -398,15 +395,15 @@ void *server_func(void *ptr)
 
     printf("Commande Zs\n");
     sprintf (mess, "Bravo vous être sélectionné. Si vous voulez que la mission réussisse tapez oui, sinon non.\n\n");
-
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-    gtk_text_buffer_insert (buffer, &iter, mess, -1);
+    gp *data2 = calloc(sizeof(gp),1);
+    data2->c1=calloc(sizeof(char),500);
+    strcpy(data2->c1,mess);
+    gdk_threads_add_idle(gdk_ecrire, (gpointer) data2);
 
   }
 
 
-  else if(server_thread_buffer[0]=='N') // envoie un message à toutle monde
+  else if(server_thread_buffer[0]=='N') // envoie un message à tout le monde
   {
     char connect;
     GtkTextIter iter;
@@ -416,10 +413,10 @@ void *server_func(void *ptr)
     content = server_thread_buffer;
     content++;
     content++;
-
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
-    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
-    gtk_text_buffer_insert (buffer, &iter, content, -1);
+    gp *data = calloc(sizeof(gp),1);
+    data->c1=calloc(sizeof(char),256);
+    strcpy(data->c1,content);
+    gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
 
   }
 
