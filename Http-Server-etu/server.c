@@ -331,6 +331,7 @@ static void manage_single_request(int peer_sfd)//gestion d'une requete
 	strcpy(response->resource_path,path_root);
 
 	next_request(peer_sfd, request);//on recupere la requete
+	printf("Request:%s \n",request->uri);
 	build_response(request, response);//construire la reponse
 	send_response(peer_sfd, response);//envoyer la reponse
 
@@ -479,9 +480,11 @@ static void perform_thread_pool_operation(int sfd)
 
 static void* manage_request_response_per_thread(void *peer_sfd)
 {
-	manage_single_request(*(int*)peer_sfd);
-	close(*(int*)peer_sfd);
-	free((int*)peer_sfd);
+	int sfd=*(int*)peer_sfd;
+	printf("Execute request:%d\n",sfd);
+	manage_single_request(sfd);
+	close(sfd);
+	free(peer_sfd);
 	pthread_exit(pthread_self);
 }
 
@@ -493,13 +496,20 @@ static void perform_thread_operation(int sfd)
 	{
 		int *peer_fd = malloc(sizeof(int));
 		*peer_fd = accept(sfd,NULL,NULL);
-		if(*peer_sfd == -1)
+		if(*peer_fd == -1)
 		{
 			perror("\nACCEPT FAILURE");
 			continue;
 		}
-		pthread_create(&tid,NULL,manage_request_response_per_thread,peer_fd);
-        pthread_detach(tid);
+		int iret1=pthread_create(&tid,NULL,manage_request_response_per_thread,(void*)peer_fd);
+		if(iret1)
+		     {
+			 fprintf(stderr,"Error - pthread_create() return code: %d\n",iret1);
+			 exit(EXIT_FAILURE);
+		     }
+		printf("pthread_create() for thread 1 returns: %d\n",iret1);
+        	pthread_detach(tid);
+		printf("Detachment\n");
 	}
 }
 
@@ -547,7 +557,7 @@ strategy_t configure_server(int argc,char *argv[])
 	int option,option_count=0;
 	strategy_t operation;
 
-	while((option = getopt(argc,argv,"p:d:w:q:ft:"))!=-1)
+	while((option = getopt(argc,argv,"p:d:w:q:ftv:"))!=-1)
 	{
 		switch (option)
 		{
@@ -559,7 +569,7 @@ strategy_t configure_server(int argc,char *argv[])
 				break;
 			case 't'://mode thread
 				//strcpy(strategy_name,"Threads");
-				operation = &perform_thread_operation;
+				operation = perform_thread_operation;
 				option_count++;
 				break;
 			case 'f'://mode fork
@@ -570,7 +580,7 @@ strategy_t configure_server(int argc,char *argv[])
 			case 'w'://mode thread pool
 				//strcpy(strategy_name,"Thread Pool");
 				worker_max = atoi(optarg);
-				operation = &perform_thread_pool_operation;
+				operation = perform_thread_pool_operation;
 				option_count++;
 				break;
 			case 'q':
@@ -589,7 +599,7 @@ strategy_t configure_server(int argc,char *argv[])
 	}
 
 	if(!check_folder_exists(path_root)) exit(0);
-
+	printf("PATH :%s\n",path_root);
 	if(option_count ==0)
 	{
 		operation = &perform_serially;
