@@ -180,9 +180,9 @@ void *server_func(void *ptr)
 	else if (server_thread_buffer[0]=='2')
   {
 		gp *data = calloc(sizeof(gp),1);
-    data->n1 = checkboxPlayer[0];
-    data->n3 = TRUE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
+        data->n1 = checkboxPlayer[0];
+        data->n3 = TRUE;
+        gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
   }
 	else if (server_thread_buffer[0]=='3')
   {
@@ -207,16 +207,16 @@ void *server_func(void *ptr)
 	else if (server_thread_buffer[0]=='4')
   {
 		gp *data = calloc(sizeof(gp),1);
-    data->n1 = boutonProposition;
-    data->n3 = TRUE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
+        data->n1 = boutonProposition;
+        data->n3 = TRUE;
+        gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
   }
 	else if (server_thread_buffer[0]=='5')
   {
 		gp *data = calloc(sizeof(gp),1);
-    data->n1 = boutonProposition;
-    data->n3 = FALSE;
-    gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
+        data->n1 = boutonProposition;
+        data->n3 = FALSE;
+        gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data);
   }
 	else if (server_thread_buffer[0]=='6')
   {
@@ -257,17 +257,17 @@ void *server_func(void *ptr)
 		char nom[100];
 		int index;
 
-    printf("Commande C\n");
-    sscanf ( server_thread_buffer , "%c %s %d" , &connect, nom, &index);
+        printf("Commande C\n");
+        sscanf ( server_thread_buffer , "%c %s %d" , &connect, nom, &index);
 
-		printf("nom=%s index=%d\n",nom, index);
-    strcpy(nom_joueur[index],nom);
+        printf("nom=%s index=%d\n",nom, index);
+        strcpy(nom_joueur[index],nom);
 
-    gp *data = calloc(sizeof(gp),1);
-    data->c1=calloc(sizeof(char),100);
-    data->l1 = (GtkLabel*)labelPlayer[index];
-    strcpy(data->c1,nom);
-    gdk_threads_add_idle(gdk_label_set_text, (gpointer) data);
+        gp *data = calloc(sizeof(gp),1);
+        data->c1=calloc(sizeof(char),100);
+        data->l1 = (GtkLabel*)labelPlayer[index];
+        strcpy(data->c1,nom);
+        gdk_threads_add_idle(gdk_label_set_text, (gpointer) data);
 	}
   else if (server_thread_buffer[0]=='8')
   {
@@ -326,7 +326,7 @@ void *server_func(void *ptr)
       char phrase_meneur[256];
       GtkTextIter iter;
 
-      sprintf(phrase_meneur,"Cher meneur, c'est à vous de jouer ! Vous devez sélectionner %d joueurs pour la prochaine mission.\n", nb_joueur_participant);
+      sprintf(phrase_meneur,"Cher meneur, c'est à vous de jouer ! Vous devez sélectionner %d joueurs pour la prochaine mission.\n\n", nb_joueur_participant);
 
       buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
       gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
@@ -373,7 +373,7 @@ void *server_func(void *ptr)
         strcat(gens_cancatenes, " ");
     }
 
-    sprintf(mess,"Voici les personnes sélectionnées par le meneur pour la prochaine mission %s. \n Etes-vous d'accord avec son choix ? A vous de voter !", gens_cancatenes);
+    sprintf(mess,"Voici les personnes sélectionnées par le meneur pour la prochaine mission %s. \n Etes-vous d'accord avec son choix ? A vous de voter !\n\n", gens_cancatenes);
 
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
     gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
@@ -397,7 +397,7 @@ void *server_func(void *ptr)
     gdk_threads_add_idle(gdk_widget_set_sensitive, (gpointer) data1);
 
     printf("Commande Zs\n");
-    sprintf (mess, "Bravo vous être sélectionné. Si vous voulez que la mission réussisse tapez oui, sinon non.\n");
+    sprintf (mess, "Bravo vous être sélectionné. Si vous voulez que la mission réussisse tapez oui, sinon non.\n\n");
 
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
     gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
@@ -446,7 +446,7 @@ void click_boutonProposition(GtkWidget *widget, gpointer window)
     if(return_fct_gdk)*/
     if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(checkboxPlayer[i])))
     {
-      printf("TRUTRTURTURTURTURTURTURTURTURTURT\n");
+      //printf("TRUTRTURTURTURTURTURTURTURTURTURT\n");
       nom_proposition_meneur[j]=i;
       j++;
     }
@@ -459,11 +459,11 @@ void click_boutonProposition(GtkWidget *widget, gpointer window)
   {
     if(j==1)
     {
-      sprintf(phrase_entree,"Attention tu as rentré %d joueur alors qu'il fallait en rentrer %d. Recommence !\n", j ,nb_joueur_participant);
+      sprintf(phrase_entree,"Attention tu as rentré %d joueur alors qu'il fallait en rentrer %d. Recommence !\n\n", j ,nb_joueur_participant);
     }
     else
     {
-      sprintf(phrase_entree,"Attention tu as rentré %d joueurs alors qu'il fallait en rentrer %d. Recommence !\n", j ,nb_joueur_participant);
+      sprintf(phrase_entree,"Attention tu as rentré %d joueurs alors qu'il fallait en rentrer %d. Recommence !\n\n", j ,nb_joueur_participant);
     }
 
 
@@ -477,6 +477,10 @@ void click_boutonProposition(GtkWidget *widget, gpointer window)
   sprintf(gens_choisis_par_meneur_pour_server, "E %d ", j);
   char anex[3];
 
+    sprintf(phrase_entree,"\n\n");
+    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view));
+    gtk_text_buffer_get_iter_at_offset(buffer, &iter, 0);
+    gtk_text_buffer_insert (buffer, &iter, phrase_entree, -1);
 
   for(i=0;i<j;i++)
   {
