@@ -376,7 +376,7 @@ static void perform_process_operation(int sfd)
 
             }
         }
-        close(peer_fd)
+        close(peer_fd);
 	}
 }
 static void perform_serially(int sfd)
