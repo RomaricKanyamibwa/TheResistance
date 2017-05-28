@@ -349,6 +349,28 @@ static void perform_process_operation(int sfd)
 		//accept (la fonction accept envoie une copie de sfd)
 		//fork
 		//fils va faire manage request sur le resulat d'accept
+		int peer_fd=accept(sfd,NULL,NULL);
+		if(peer_fd==-1)
+        {
+            perror("ACCEPT error during perform serially");
+            continue;
+        }
+        pid_t pid=fork();
+        if(pid < 0)
+		{
+            perror("FORK error");
+			exit(-1);
+        }
+        if(pid==0)
+        {
+            manage_single_request(peer_fd);
+            exit(0);
+        }
+        else
+        {
+            while(waitpid(-1,NULL,WNOHANG)>0);
+        }
+        close(peer_fd)
 	}
 }
 static void perform_serially(int sfd)
