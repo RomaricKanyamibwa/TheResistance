@@ -360,6 +360,14 @@ static void perform_serially(int sfd)
 		//faire accept
 		//manage request
 		//ferme le socket
+		int peer_fd=accept(sfd,NULL,NULL);
+		if(peer_fd==-1)
+        {
+            perror("ACCEPT error during perform serially");
+            return;
+        }
+        manage_single_request(peer_fd);
+        close(peer_fd);
 	}
 }
 
