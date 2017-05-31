@@ -199,7 +199,7 @@ void *server(void *ptr)
 
             }
         }
-        serverbuffer[0] = ' '; //sinon rentre dans V d'après aloirs que pas encore eu de vote 
+        serverbuffer[0] = ' '; //sinon rentre dans V d'après aloirs que pas encore eu de vote
     }
 
 
@@ -315,7 +315,7 @@ void *server(void *ptr)
 
     if(compteurReussites == 3)
     {
-      broadcast("N Les Rebels ont gagné !");
+      broadcast("F Les Rebels ont gagné !");
       close(newsockfd);
       close(sockfd);
       return;
@@ -324,7 +324,7 @@ void *server(void *ptr)
     }
     if(compteurMissions - compteurReussites == 3)
     {
-      broadcast("N Les Espions ont gagné !");
+      broadcast("F Les Espions ont gagné !");
       close(newsockfd);
       close(sockfd);
       return;

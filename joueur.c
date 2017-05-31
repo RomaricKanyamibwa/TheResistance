@@ -339,7 +339,7 @@ void *server_func(void *ptr)
     char connect;
     char mess[500];
     char *gens[3];
-    char gens_cancatenes[256];
+    char gens_cancatenes[256]="";
     int j;
 
     int i;
@@ -367,7 +367,7 @@ void *server_func(void *ptr)
     for(i=0;i<j;i++)
     {
         strcat(gens_cancatenes, gens[i]);
-        strcat(gens_cancatenes, " ");
+        strcat(gens_cancatenes, "\n");
     }
 
 
@@ -418,6 +418,24 @@ void *server_func(void *ptr)
     strcpy(data->c1,content);
     gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
 
+  }
+
+
+  else if(server_thread_buffer[0]=='F') // Fin jeu
+  {
+    char connect;
+    GtkTextIter iter;
+    char *content=malloc(sizeof(char)*256);
+
+    printf("Commande N\n");
+    content = server_thread_buffer;
+    content++;
+    content++;
+    gp *data = calloc(sizeof(gp),1);
+    data->c1=calloc(sizeof(char),256);
+    strcpy(data->c1,content);
+    gdk_threads_add_idle(gdk_ecrire, (gpointer) data);
+    break;
   }
 
         close(newsockfd);
